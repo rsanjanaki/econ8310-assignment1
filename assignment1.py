@@ -20,20 +20,16 @@ train_data = train_data.sort_values('Timestamp').set_index('Timestamp')
 y_train = train_data['trips']
 
 
-y_train.index.freq = y_train.index.inferred_freq
-
-
 model = ExponentialSmoothing(
     y_train,
-    seasonal_periods=168,        
+    seasonal_periods=168,          
     trend='add',                  
-    seasonal='add',               
+    seasonal='add',                
     initialization_method='estimated'
 )
 
 
 modelFit = model.fit(optimized=True)
-
 
 pred = modelFit.forecast(steps=744)
 
