@@ -25,3 +25,21 @@ pred = modelFit.forecast(steps=744)
 
 pred = np.array(pred)
 
+test_trips_actual = pd.read_csv('tests/testData.csv')
+
+
+rmse = np.sqrt(sum([(pred[i]-test_trips_actual['trips'][i])**2 for i in range(len(pred))])) / 744
+
+print(f"RMSE: {rmse:.2f}")
+print(f"\nAccuracy Levels:")
+print(f"  Level 1 (< 220): {'✓ PASS' if rmse < 220 else '✗ FAIL'}")
+print(f"  Level 2 (< 185): {'✓ PASS' if rmse < 185 else '✗ FAIL'}")
+print(f"  Level 3 (< 171): {'✓ PASS' if rmse < 171 else '✗ FAIL'}")
+print(f"\nPrediction Statistics:")
+print(f"  Min predicted trips: {pred.min():.0f}")
+print(f"  Max predicted trips: {pred.max():.0f}")
+print(f"  Mean predicted trips: {pred.mean():.0f}")
+print(f"  Total predictions: {len(pred)}")
+
+
+
