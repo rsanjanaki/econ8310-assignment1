@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import os
+from prophet import Prophet
 
 
 train_path = "assignment_data_train.csv"
@@ -12,26 +12,29 @@ if os.path.exists(train_path):
 else:
     train_data = pd.read_csv(train_url)
 
-
-train_data['Timestamp'] = pd.to_datetime(train_data['Timestamp'])
-train_data = train_data.sort_values('Timestamp').set_index('Timestamp')
-
-
-y_train = train_data['trips']
+train_data["Timestamp"] = pd.to_datetime(train_data["Timestamp"])
+train_data = train_data.sort_values("Timestamp")
 
 
-model = ExponentialSmoothing(
-    y_train,
-    seasonal_periods=168,          
-    trend='add',                  
-    seasonal='add',                
-    initialization_method='estimated'
+prophet_train = train_data.rename(columns={"Timestamp": "ds", "trips": "y"})[["ds", "y"]]
+
+m = Prophet(
+    yearly_seasonality=False,
+    weekly_seasonality=True,
+    daily_seasonality=True,
+    seasonality_mode="additive"
 )
 
 
-modelFit = model.fit(optimized=True)
+m.add_seasonality(name="hourly", period=24, fourier_order=10)
 
-pred = modelFit.forecast(steps=744)
+m.fit(prophet_train)
+
+future = m.make_future_dataframe(periods=744, freq="H")
+forecast = m.predict(future)
 
 
-pred = np.array(pred)
+pred = forecast["yhat"].tail(744).to_numpy()
+
+
+pred = np.maximum(pred, 0)
